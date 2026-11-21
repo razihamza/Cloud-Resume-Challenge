@@ -28,6 +28,7 @@ docs/manual-setup/dynamodb.md
 docs/manual-setup/lambda.md
 docs/manual-setup/api-gateway.md
 docs/manual-setup/cloudfront-s3.md
+docs/manula-setup/account-security.md
 ```
 ## Documentation
 - [CloudFront & S3 Setup](docs/manual-setup/cloudfront-s3.md)

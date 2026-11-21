@@ -1,4 +1,4 @@
-const API_URL = "https://4uwjlagcsh.execute-api.ap-south-2.amazonaws.com/visits";
+const API_URL = "https://qu2xb6dkeh.execute-api.ap-south-2.amazonaws.com/visits";
 
 async function updateCounter() {
   const el = document.getElementById("count");
