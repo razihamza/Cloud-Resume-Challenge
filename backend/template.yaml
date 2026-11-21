@@ -1,0 +1,102 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Cloud Resume Challenge backend. A DynamoDB table, a Python Lambda function
+  and an HTTP API that together count page visits.
+
+Parameters:
+  SiteOrigin:
+    Type: String
+    Default: https://dxvjp1p2avy3e.cloudfront.net
+    Description: >
+      Exact origin of the website allowed to call the API (CORS).
+      Must start with https:// and have no trailing slash and no path.
+  LogRetentionDays:
+    Type: Number
+    Default: 30
+    Description: How long Lambda logs are kept.
+
+Globals:
+  Function:
+    # Change this to match "python --version" on your PC (python3.12,
+    # python3.13 or python3.14), because "sam build" looks for that Python.
+    Runtime: python3.13
+    Timeout: 5
+    MemorySize: 128
+
+Resources:
+  # ---- Database: one item holding the visit count ----------------------
+  VisitorTable:
+    Type: AWS::DynamoDB::Table
+    # Stateful resource: keep the data if the stack is deleted or replaced.
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      # No SSESpecification: DynamoDB uses its free AWS-owned encryption key.
+
+  # ---- Logs: keep them for a limited time ------------------------------
+  FunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: !Ref LogRetentionDays
+
+  # ---- Public HTTPS front door -----------------------------------------
+  VisitorApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      CorsConfiguration:
+        AllowOrigins:
+          - !Ref SiteOrigin
+        AllowMethods:
+          - POST
+          - OPTIONS
+        AllowHeaders:
+          - content-type
+        MaxAge: 3600
+      # Cost guard: the endpoint is public, so cap the request rate.
+      DefaultRouteSettings:
+        ThrottlingRateLimit: 2
+        ThrottlingBurstLimit: 5
+
+  # ---- The function that adds 1 ----------------------------------------
+  VisitorFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: lambda/
+      Handler: lambda_function.lambda_handler
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref VisitorTable
+      LoggingConfig:
+        LogGroup: !Ref FunctionLogGroup
+      # Least privilege: one action, on this one table.
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action: dynamodb:UpdateItem
+              Resource: !GetAtt VisitorTable.Arn
+      Events:
+        CountVisit:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref VisitorApi
+            Path: /visits
+            Method: POST
+
+Outputs:
+  ApiUrl:
+    Description: Put this URL in frontend/js/counter.js
+    Value: !Sub "https://${VisitorApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/visits"
+  TableName:
+    Description: DynamoDB table name
+    Value: !Ref VisitorTable
+  FunctionName:
+    Description: Lambda function name
+    Value: !Ref VisitorFunction
