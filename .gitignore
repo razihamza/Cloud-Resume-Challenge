@@ -1,6 +1,17 @@
+# Python
 __pycache__/
+*.pyc
 .venv/
-.aws-sam/
-*.zip
-.env
 .pytest_cache/
+
+# AWS SAM build output (rebuilt by "sam build")
+.aws-sam/
+
+# Local secrets and environment files. There should be none in this project.
+.env
+*.pem
+
+# Editor and OS files
+.vscode/
+.DS_Store
+Thumbs.db

@@ -12,29 +12,43 @@ My implementation of the [Cloud Resume Challenge](https://cloudresumechallenge.d
 - [ ] Custom domain (Route 53) - optional
 - [x] Visitor counter (JavaScript, API Gateway, Lambda, DynamoDB)
 - [x] Account security baseline and cost alerts
-- [ ] Testing for Lambda Function (Automated)
-- [ ] Infrastructure as code (SAM or CloudFormation) for the backend
+- [x] Testing for Lambda Function (Automated)
+- [x] Infrastructure as code (SAM or CloudFormation) for the backend
 - [ ] CI/CD with GitHub Actions
 - [ ] Blog post about the build
 
 ## Structure
 
 ```
-frontend/index.html                 resume page
-frontend/css/style.css              styling
-frontend/js/counter.js              visitor counter js
-backend/lambda/lambda_function.py   dynamodb update function
-docs/manual-setup/dynamodb.md
-docs/manual-setup/lambda.md
-docs/manual-setup/api-gateway.md
-docs/manual-setup/cloudfront-s3.md
-docs/manula-setup/account-security.md
+.
+├── README.md
+├── .gitignore
+├── frontend/                  index.html, css/, js/counter.js
+├── backend/
+│   ├── template.yaml          the whole backend, as code
+│   ├── samconfig.toml         deploy settings (stack name, region, tags)
+│   ├── lambda/
+│   │   └── lambda_function.py
+│   ├── tests/                 pytest unit tests
+│   ├── requirements-dev.txt
+│   └── pytest.ini
+└── docs/
+    ├── decisions.md           why I chose what I chose
+    ├── practices.md           how I work on this project
+    ├── infrastructure.md      deploying, updating and tearing down
+    ├── testing.md             how the tests work
+    ├── runbook.md             what to do when something breaks
+    ├── manual-setup/          hand-built setup records 
+    └── postmortems/           blameless write-ups
 ```
 ## Documentation
 - [CloudFront & S3 Setup](docs/manual-setup/cloudfront-s3.md)
 - [DynamoDB](docs/manual-setup/dynamodb.md)
 - [Lambda Function](docs/manual-setup/lambda.md)
 - [API Gateway Setup](docs/manual-setup/api-gateway.md)
+- [Infrastructure(SAM)]
+- [Testing]
+- [Runbook, When Something Breaks]
 
 ## Author
 
